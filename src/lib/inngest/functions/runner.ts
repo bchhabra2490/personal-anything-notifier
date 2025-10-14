@@ -21,10 +21,18 @@ export const runner = inngest.createFunction(
     // Load notification
     const { data: notif, error: notifErr } = await supabaseAdmin
       .from('pan_notifications')
-      .select('id, query, query_for_llm, schedule_cron, metadata')
+      .select('id, query, query_for_llm, schedule_cron, metadata, user_id')
       .eq('id', notificationId)
       .single();
     if (notifErr || !notif) throw notifErr ?? new Error('Notification not found');
+
+    // Load user
+    const { data: userRow, error: userErr } = await supabaseAdmin
+      .from('pan_users')
+      .select('email')
+      .eq('id', notif.user_id)
+      .single();
+    if (userErr || !userRow) throw userErr ?? new Error('User not found');
 
     // Create a job row as running
     const runAtIso = new Date().toISOString();
@@ -70,7 +78,7 @@ export const runner = inngest.createFunction(
 
     // Send email notification via helper
     const emailResult = await step.run('send-email', async () => {
-      const to = 'bchhabra2490@gmail.com';
+      const to = userRow.email;
       const answer: string = String((execution as any)?.answer ?? '').trim();
       const sources: Array<{ title: string; url: string }> = Array.isArray((execution as any)?.sources)
         ? (execution as any).sources
