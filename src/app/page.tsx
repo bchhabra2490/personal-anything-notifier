@@ -1,5 +1,6 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
   const [userId, setUserId] = useState("");
@@ -7,6 +8,14 @@ export default function Home() {
   const [cron, setCron] = useState("");
   const [result, setResult] = useState<{ id: string; nextRunAt: string | null; queryForLLM?: string } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('userId');
+    if (id) {
+      setUserId(id);
+    }
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,9 +41,29 @@ export default function Home() {
 
   return (
     <main style={{ maxWidth: 820, margin: "40px auto", padding: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>Personal Anything Notifier</h1>
-        <span style={{ color: "#6b7280", fontSize: 12 }}>Next.js · Inngest · Supabase</span>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <h1 style={{ fontSize: 22, margin: 0 }}>Personal Anything Notifier</h1>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Link 
+              href="/signup"
+              style={{ 
+                background: "#0b5fff", 
+                color: "white", 
+                padding: "6px 12px", 
+                borderRadius: 6, 
+                textDecoration: "none", 
+                fontSize: 12,
+                fontWeight: 500
+              }}
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+        <p style={{ color: "#6b7280", margin: 0, fontSize: 16, fontStyle: "italic" }}>
+          Why rely on other apps' notifications when you can create yours
+        </p>
       </div>
 
       <section style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
@@ -43,12 +72,15 @@ export default function Home() {
             <label htmlFor="userId" style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>User ID</label>
             <input
               id="userId"
-              placeholder="UUID"
+              placeholder="Enter your UUID from email"
               value={userId}
               onChange={e => setUserId(e.target.value)}
               required
               style={{ width: "100%", padding: "10px 12px", border: "1px solid #e5e7eb", borderRadius: 8 }}
             />
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
+              Don't have an ID? <Link href="/signup" style={{ color: "#0b5fff", textDecoration: "none" }}>Get one here</Link>
+            </div>
           </div>
 
           <div>
@@ -88,8 +120,23 @@ export default function Home() {
             >
               {loading ? "Creating..." : "Create notification"}
             </button>
-            <span style={{ fontSize: 12, color: "#6b7280" }}>Runs are scheduled and executed by Inngest automatically.</span>
           </div>
+          
+          {userId && (
+            <div style={{ marginTop: 8 }}>
+              <Link 
+                href={`/manage?userId=${userId}`}
+                style={{ 
+                  color: "#0b5fff", 
+                  textDecoration: "none", 
+                  fontSize: 14,
+                  fontWeight: 500
+                }}
+              >
+                Manage existing notifications →
+              </Link>
+            </div>
+          )}
         </form>
       </section>
 
