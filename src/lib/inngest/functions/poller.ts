@@ -4,7 +4,8 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 // Runs every 30 seconds: find due notifications and schedule a scheduler function for each
 export const poller = inngest.createFunction(
   { id: 'poll-schedule-near-future' },
-  { cron: '* * * * *' },
+  // { cron: '* * * * *' },
+  { event: 'notification/poll' },
   async ({ step }: { step: any }) => {
     console.log("Poller function called");
     // Proactively schedule runs in the near future to avoid lateness.
